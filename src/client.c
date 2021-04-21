@@ -31,28 +31,25 @@ void* func(void* arg){
     
     struct Arg_Thread *thread = (struct Arg_Thread*) arg;
     printf("%ld -- %d -- %d\n",pthread_self(),thread->request_id, thread->task );
-    usleep(2000);
     pthread_exit(NULL);
 }
 
 
 void signalAlarmHandler(int signo){   //faltam tweaks
-    if( pthread_self()==daddy_thread)
+    if( pthread_self()!=daddy_thread)
     {
-        raise(SIGUSR1);
-        exit(0);
-    }
-    else{
         //escrever no log que não tem tempo de registo porque o cliente expirou
         printf("O cliente expirou");
+        pthread_cancel(pthread_self());
+    }
+    else{
+        for(int i = 0; i<sizeOfThreads; i++)
+            pthread_kill(threads[i],SIGALRM); 
+        sleep(1);
+        unlink(publicFifo);
+        printf("Cliente finalizado com %d threads\n", sizeOfThreads);
         exit(0);
     }
-   
-
-    unlink(publicFifo);
-
-    exit(0);
-
 }
 
 
@@ -106,7 +103,8 @@ int main(int argc, char* argv[]){
         pthread_create(&threads[sizeOfThreads],NULL,func,&args);
         sizeOfThreads++;
         
-       usleep(2000); //pausa entre cada cliente
+        int time = rand()%2001+3000;
+        usleep(time); //pausa entre cada cliente
     }
 }
 
