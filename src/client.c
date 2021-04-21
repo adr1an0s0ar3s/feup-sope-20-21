@@ -20,6 +20,7 @@
 
 pthread_t threads[10000]; 
 pid_t pid;
+pthread_t daddy_thread;
 int fdServerFifo;
 char* publicFifo;
 int sizeOfThreads = 0;
@@ -30,27 +31,39 @@ void* func(void* arg){
     
     struct Arg_Thread *thread = (struct Arg_Thread*) arg;
     printf("%ld -- %d -- %d\n",pthread_self(),thread->request_id, thread->task );
-    usleep(4000);
+    usleep(2000);
     pthread_exit(NULL);
 }
 
 
-void signalAlarmHandler(int signo){
-    for(int i = 0; i<sizeOfThreads; i++){
-        pthread_cancel(threads[i]);
+void signalAlarmHandler(int signo){   //faltam tweaks
+    if( pthread_self()==daddy_thread)
+    {
+        raise(SIGUSR1);
+        exit(0);
     }
+    else{
+        //escrever no log que não tem tempo de registo porque o cliente expirou
+        printf("O cliente expirou");
+        exit(0);
+    }
+   
+
     unlink(publicFifo);
 
     exit(0);
 
 }
 
+
 int main(int argc, char* argv[]){
     struct Arg_Thread args;
+    daddy_thread = pthread_self();
     int request_id = 0;
     int n_random;
     srand(time(NULL));
 
+ 
     signal(SIGALRM, signalAlarmHandler);
     publicFifo = argv[2];
 
@@ -86,7 +99,7 @@ int main(int argc, char* argv[]){
 
     //Loop de criação de threads
     while(true){
-        n_random = rand()%8 +1; //Numero de 1 a 9
+        n_random = rand()%9 +1; //Numero de 1 a 9
         args.request_id = request_id++;
         args.task = n_random;
         //criação de thread         
