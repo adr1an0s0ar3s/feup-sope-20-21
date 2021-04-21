@@ -17,6 +17,7 @@
 
 #include "delay.h"
 #include "client.h"
+#include "thread.h"
 
 pthread_t threads[10000]; 
 pid_t pid;
@@ -69,7 +70,6 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
 
-
     if(atoi(argv[1])<=0){
         fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
         exit(EXIT_FAILURE);
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
     pid = getpid();
 
     //abrir fifo público
-    if(mkfifo(publicFifo, 0660) < 0) {
+    if(mkfifo(publicFifo, FIFO_MODE) < 0) {
         if(errno == EEXIST) 
             fprintf(stderr, "FIFO '%s' already exists\n", argv[2]);
         else {
@@ -86,24 +86,23 @@ int main(int argc, char* argv[]){
             exit(EXIT_FAILURE);
         }
     }
-
     if((fdServerFifo = open(argv[2], O_WRONLY))<0)
     {
         fprintf(stderr,"Error in opening public FIFO\n");
     }
     
     alarm(atoi(argv[1]));
-
     //Loop de criação de threads
     while(true){
         n_random = rand()%9 +1; //Numero de 1 a 9
         args.request_id = request_id++;
         args.task = n_random;
         //criação de thread         
-        pthread_create(&threads[sizeOfThreads],NULL,func,&args);
+        pthread_create(&threads[sizeOfThreads],NULL,threadFunction,&args);
+        //pthread_join(threads[sizeOfThreads], NULL);
         sizeOfThreads++;
         
-        int time = rand()%2001+3000;
+        int time = rand()%501+500;
         usleep(time); //pausa entre cada cliente
     }
 }

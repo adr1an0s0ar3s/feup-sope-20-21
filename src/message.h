@@ -1,5 +1,8 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
+
+#include <sys/types.h>
+
 typedef struct {
 	int rid;  // request id
 	pid_t pid;  // process id
@@ -7,4 +10,5 @@ typedef struct {
 	int tskload;  // task load
 	int tskres;  // task result
 } Message;
+
 #endif // MESSAGE_H

@@ -1,7 +1,9 @@
 {
     "files.associations": {
         "unistd.h": "c",
-        "signal.h": "c"
+        "signal.h": "c",
+        "message.h": "c",
+        "types.h": "c"
     },
     "C_Cpp.dimInactiveRegions": false
 }
