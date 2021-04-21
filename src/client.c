@@ -41,7 +41,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    if(fdServerFifo = open(argv[2], O_WRONLY)<0)
+    if((fdServerFifo = open(argv[2], O_WRONLY))<0)
     {
         fprintf(stderr,"Error in opening public FIFO\n");
     }
