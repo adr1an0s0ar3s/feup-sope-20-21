@@ -8,7 +8,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 
-void * threadFunction(void * arg){
+void * threadFunction(void * arg) {
+
     //pthread_detach(pthread_self());
     struct Arg_Thread * args = (struct Arg_Thread *) arg;
     int fdFifo;
@@ -61,5 +62,5 @@ void * threadFunction(void * arg){
 
     /*printf("%ld -- %d -- %d\n",pthread_self(),thread->request_id, thread->task );
     usleep(2000);*/
-    pthread_exit(NULL);
+    pthread_exit(NULL); // Or return
 }
