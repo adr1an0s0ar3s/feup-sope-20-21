@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "message.h"
 #include "client.h"
+#include "log.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,6 +36,8 @@ void * threadFunction(void * arg) {
         perror("Can't send message!");
         exit(1);
     }
+
+    write_operation(msg,IWANT);
     
     // Receive response
     if ((fdFifo = open(path, O_RDONLY)) < 0) {
@@ -47,7 +50,7 @@ void * threadFunction(void * arg) {
         exit(1);
     }
 
-    //Log (mais tarde)
+    write_operation(msg,GOTRS);
 
     //Desalocar recursos, fechar fifo privado e terminar
     if (close(fdFifo) != 0) {

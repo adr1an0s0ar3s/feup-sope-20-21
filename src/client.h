@@ -29,12 +29,16 @@ pthread_t threads[10000];
 int sizeOfThreads;
 
 /**
- * @brief Handler of SIGALRM: purpose of cleaning all threads;
+ * @brief Handler of SIGALRM: purpose of cleaning all threads
  * 
  * @param signo 
  */
 void signalAlarmHandler(int signo);
 
+/**
+ * @brief Struct passed as argument to the threads with request_id and task;
+ * 
+ */
 struct Arg_Thread{
     int request_id;
     int task;

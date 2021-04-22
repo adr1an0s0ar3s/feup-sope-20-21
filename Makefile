@@ -2,8 +2,8 @@
 
 all: client server
 
-client: src/client.h src/message.h src/thread.h src/thread.c
-	gcc src/client.c src/thread.c -Wall -pthread -o test/client
+client: src/client.h src/message.h src/thread.h src/thread.c src/log.h src/log.c
+	gcc src/client.c src/thread.c src/log.c -Wall -pthread -o test/client
 
 server: server/server.o server/lib.o server/delay.h server/delay.c
 	gcc server/server.o server/lib.o server/delay.c -Wall -pthread -DDELAY=0 -o test/server

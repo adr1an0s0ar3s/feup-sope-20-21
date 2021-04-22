@@ -17,12 +17,14 @@
 
 #include "client.h"
 #include "thread.h"
+#include "log.h"
 
 pthread_t threads[10000];
 pthread_t daddy_thread;
 int fdServerFifo;
 char* publicFifo;
 int sizeOfThreads = 0;
+
 
 /*// FOR TESTING PURPOSES
 void* func(void* arg){
