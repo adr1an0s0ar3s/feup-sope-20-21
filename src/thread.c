@@ -50,7 +50,8 @@ void * threadFunction(void * arg) {
         exit(1);
     }
 
-    write_operation(msg, GOTRS);
+    if (msg.tskres != -1) write_operation(msg, GOTRS);
+    else write_operation(msg, CLOSD);
 
     //Desalocar recursos, fechar fifo privado e terminar
     if (close(fdFifo) != 0) {
