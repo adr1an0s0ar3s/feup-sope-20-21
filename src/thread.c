@@ -27,43 +27,44 @@ void * threadFunction(void * arg) {
     char path[200];
     snprintf(path, 200, "/tmp/%d.%ld",  msg.pid, msg.tid);
     if (mkfifo(path, FIFO_MODE) != 0) {
-        perror("Can't create thread!");
+        fprintf(stderr, "Can't create thread!\n");
         exit(1);
     }
 
     // Send message
     if (write(fdServerFifo, &msg, sizeof(msg)) < 0) {
-        perror("Can't send message!");
+        fprintf(stderr, "Can't send message!\n");
         exit(1);
     }
 
-    write_operation(msg,IWANT);
+    write_operation(msg, IWANT);
     
     // Receive response
     if ((fdFifo = open(path, O_RDONLY)) < 0) {
-        printf("Can't open private FIFO!%d", msg.rid);
+        fprintf(stderr, "Can't open private FIFO! %d\n", msg.rid);
         exit(1);
     }
 
     if (read(fdFifo, &msg, sizeof(msg)) < 0) {
-        perror("Can't recieve result!");
+        fprintf(stderr, "Can't recieve result!\n");
         exit(1);
     }
 
-    write_operation(msg,GOTRS);
+    write_operation(msg, GOTRS);
 
     //Desalocar recursos, fechar fifo privado e terminar
     if (close(fdFifo) != 0) {
-        perror("Can't close private FIFO!");
+        fprintf(stderr, "Can't close private FIFO!\n");
         exit(1);
     }
 
     if (unlink(path) != 0) {
-        perror("Can't erase private FIFO!");
+        fprintf(stderr, "Can't erase private FIFO!\n");
         exit(1);
     }
 
     /*printf("%ld -- %d -- %d\n",pthread_self(),thread->request_id, thread->task );
     usleep(2000);*/
+
     pthread_exit(NULL); // Or return
 }

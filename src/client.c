@@ -25,17 +25,6 @@ int fdServerFifo;
 char* publicFifo;
 int sizeOfThreads = 0;
 
-
-/*// FOR TESTING PURPOSES
-void* func(void* arg){
-    pthread_detach(pthread_self());
-    
-    struct Arg_Thread *thread = (struct Arg_Thread*) arg;
-    printf("%ld -- %d -- %d\n",pthread_self(),thread->request_id, thread->task );
-    pthread_exit(NULL);
-}*/
-
-
 void signalAlarmHandler(int signo) {   //faltam tweaks
 
     if (pthread_self() != daddy_thread) {
@@ -61,7 +50,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (atoi(argv[1]) <= 0){
+    if (atoi(argv[1]) <= 0) {
         fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
         exit(EXIT_FAILURE);
     }
@@ -80,8 +69,9 @@ int main(int argc, char* argv[]) {
 
     // Opening the public FIFO
     if (mkfifo(publicFifo, FIFO_MODE) < 0) {
-        if (errno == EEXIST) 
+        if (errno == EEXIST) {
             fprintf(stderr, "FIFO '%s' already exists\n", argv[2]);
+        }
         else {
             fprintf(stderr, "Can't create server FIFO!\n");
             exit(EXIT_FAILURE);

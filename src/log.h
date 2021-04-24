@@ -13,9 +13,9 @@
 /**
  * @brief Writes a certain operation constituted by certain message in log
  * 
- * @param mensage Message of client
+ * @param message Message of client
  * @param operation Operation of client
  */
-void write_operation(Message mensage,char* operation);
+void write_operation(Message message, char* operation);
 
 #endif

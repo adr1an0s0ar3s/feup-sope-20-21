@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-void write_operation(Message mensage,char* operation){
-    printf("%ld;%d;%d;%d;%ld;%d;%s\n",time(NULL),mensage.rid,mensage.tskload,mensage.pid,mensage.tid,mensage.tskres,operation);
-   
+void write_operation(Message message,char* operation) {
+    printf("%ld;%d;%d;%d;%ld;%d;%s\n", time(NULL), message.rid, message.tskload, message.pid, message.tid, message.tskres, operation);
 }
