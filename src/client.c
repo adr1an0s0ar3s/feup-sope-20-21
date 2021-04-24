@@ -43,13 +43,13 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (atoi(argv[2]) <= 0) {
-        fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
+    if (strcmp(argv[1], "-t")) {
+        fprintf(stderr, "The flag -t is required\n");
         exit(EXIT_FAILURE);
     }
 
-    if (strcmp(argv[1], "-t")) {
-        fprintf(stderr, "The flag -t is requeired\n");
+    if (atoi(argv[2]) <= 0) {
+        fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
         exit(EXIT_FAILURE);
     }
 
