@@ -1,47 +1,46 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef SRC_CLIENT_H_
+#define SRC_CLIENT_H_
 
-#include <stdio.h>
 #include <sys/types.h>
 
 /**
- * @brief Variable that stores the pid info of the process
- * 
- */
-pid_t pid;
-
-/**
  * @brief File descriptor of the public fifo
- * 
  */
-int fdServerFifo;
+int publicFifoFD;
 
 /**
- * @brief Array containing all the threads
- * 
+ * @brief Thread id of the main client
  */
-pthread_t threads[10000]; 
+pthread_t daddy_thread;
 
 /**
  * @brief Size of Array threads
- * 
  */
 int sizeOfThreads;
 
 /**
- * @brief Handler of SIGALRM: purpose of cleaning all threads
+ * @brief Flag which tells the program if the client is still running.
+ * If is it equal to 1, the client has ended and vice-versa
  * 
- * @param signo 
+ */
+int isClientClosed;
+
+/**
+ * @brief Flag which tells the program if the server is still running.
+ * If is it equal to 1, the server has ended and vice-versa
+ */
+int isServerClosed;
+
+/**
+ * @brief Seed used to generate random numbers
+ */
+unsigned int seed;
+
+/**
+ * @brief Handler of SIGALRM: purpose of of activating the isClientClosed flag
+ * 
+ * @param signo SIGALARM
  */
 void signalAlarmHandler(int signo);
 
-/**
- * @brief Struct passed as argument to the threads with request_id and task;
- * 
- */
-struct Arg_Thread{
-    int request_id;
-    int task;
-};
-
-#endif 
+#endif  // SRC_CLIENT_H_

@@ -1,5 +1,5 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef SRC_MESSAGE_H_
+#define SRC_MESSAGE_H_
 
 #include <sys/types.h>
 
@@ -11,4 +11,4 @@ typedef struct {
 	int tskres;  // task result
 } Message;
 
-#endif // MESSAGE_H
+#endif // SRC_MESSAGE_H_

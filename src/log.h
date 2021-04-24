@@ -1,8 +1,7 @@
-#ifndef LOG_H
-#define LOG_H 
+#ifndef SRC_LOG_H_
+#define SRC_LOG_H_
 
 #include "message.h"
-#include "time.h"
 
 //Operations
 #define IWANT "IWANT"
@@ -18,4 +17,4 @@
  */
 void write_operation(Message message, char* operation);
 
-#endif
+#endif  // SRC_LOG_H_

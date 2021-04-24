@@ -1,5 +1,5 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef SRC_THREAD_H_
+#define SRC_THREAD_H_
 
 #define FIFO_MODE 0777
 
@@ -10,4 +10,4 @@
  */
 void * threadFunction(void * arg);
 
-#endif // THREAD_H
+#endif  // SRC_THREAD_H_
