@@ -24,23 +24,11 @@ pthread_t daddy_thread;
 int fdServerFifo;
 char* publicFifo;
 int sizeOfThreads = 0;
+int isClientClosed = 0, isServerClosed = 0;
 
 void signalAlarmHandler(int signo) {   //faltam tweaks
-
-    if (pthread_self() != daddy_thread) {
-        //escrever no log que não tem tempo de registo porque o cliente expirou
-        printf("O cliente expirou! %ld\n", pthread_self());
-        pthread_cancel(pthread_self());
-    }
-    else {
-        for(int i = 0; i < sizeOfThreads; ++i) pthread_kill(threads[i], SIGALRM);
-        sleep(1);
-        unlink(publicFifo);
-        printf("Cliente finalizado com %d threads\n", sizeOfThreads);
-        exit(0);
-    }
+    if (pthread_self() == daddy_thread) isClientClosed = 1;
 }
-
 
 int main(int argc, char* argv[]) {
 
@@ -85,7 +73,7 @@ int main(int argc, char* argv[]) {
     alarm(atoi(argv[1]));
 
     // Loop with the creation of pseudo random threads
-    while (true) {
+    while (!isClientClosed && !isServerClosed) {
 
         n_random = rand()%9 + 1;
         args.request_id = request_id++;
@@ -99,6 +87,11 @@ int main(int argc, char* argv[]) {
         t = rand()%501 + 500;
         usleep(t); // Pseudo random pause
     }
+
+    sleep(1);
+    unlink(publicFifo);
+    printf("Cliente finalizado com %d threads\n", sizeOfThreads);
+    exit(0);
 }
 
 

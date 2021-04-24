@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 
+extern int isClientClosed, isServerClosed;
+
 void * threadFunction(void * arg) {
 
     //pthread_detach(pthread_self());
@@ -38,25 +40,35 @@ void * threadFunction(void * arg) {
     }
 
     write_operation(msg, IWANT);
-    
-    // Receive response
-    if ((fdFifo = open(path, O_RDONLY)) < 0) {
-        fprintf(stderr, "Can't open private FIFO! %d\n", msg.rid);
-        exit(1);
+
+    if (!isClientClosed) {
+        // Receive response
+        if ((fdFifo = open(path, O_RDONLY)) < 0) {
+            fprintf(stderr, "Can't open private FIFO! %d\n", msg.rid);
+            exit(1);
+        }
+
+        if (read(fdFifo, &msg, sizeof(msg)) < 0) {
+            fprintf(stderr, "Can't recieve result!\n");
+            exit(1);
+        }
+
+        if (msg.tskres != -1) {
+            write_operation(msg, GOTRS);
+        }
+        else {
+            isServerClosed = 1;
+            write_operation(msg, CLOSD);
+        }
+
+        // Close private FIFO
+        if (close(fdFifo) != 0) {
+            fprintf(stderr, "Can't close private FIFO!\n");
+            exit(1);
+        }
     }
-
-    if (read(fdFifo, &msg, sizeof(msg)) < 0) {
-        fprintf(stderr, "Can't recieve result!\n");
-        exit(1);
-    }
-
-    if (msg.tskres != -1) write_operation(msg, GOTRS);
-    else write_operation(msg, CLOSD);
-
-    //Desalocar recursos, fechar fifo privado e terminar
-    if (close(fdFifo) != 0) {
-        fprintf(stderr, "Can't close private FIFO!\n");
-        exit(1);
+    else {
+        write_operation(msg, GAVUP);
     }
 
     if (unlink(path) != 0) {
