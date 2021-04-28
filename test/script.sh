@@ -3,7 +3,7 @@
 ###25abr corrections!
 
 echo ":::::::: SOPE 2020/2021 MT2 ::::::::"
-echo ":::::::: VALIDATION SCRIPT ::::::::"
+echo ":::::::: VALIDATION SCRIPT  ::::::::"
 
 main() {
 	initVars
@@ -12,9 +12,9 @@ main() {
 		clean) clean; exit;;
 		1) echo ":::: Test case $1 - Server outlives client" ;
 			clean;
-			run_server -t 3 -l 10 /tmp/fifo_"${USER}";
+			run_server -t 10 -l 10 /tmp/fifo_"${USER}";
 			sleep 1 ;
-			run_client -t 1 /tmp/fifo_"${USER}";;
+			run_client -t 5 /tmp/fifo_"${USER}";;
 		2) echo ":::: Test case $1 - Server dies first";
 			clean;
 			run_server -t 5 -l 10 /tmp/fifo_"${USER}";
@@ -131,11 +131,9 @@ ID_DONE_FAILD=$(grep 'TSKDN\|FAILD' server_log.txt | tr -d [:blank:] | awk -F\; 
 verifySequences() {
  echo "TASKS CHECK"
   UNIQUE_IDS_CLIENT=$(echo "$ID_CLIENT" | uniq -d)
-  if [ ! -z "$UNIQUE_IDS_CLIENT" ]; then echo "ERROR: REPEATED IDS ON CLIENT"; else echo "ALL OK (CLIENT-IDS)"; fi
+  if [ ! -z "$UNIQUE_IDS_CLIENT" ]; then echo "ERROR: REPEATED IDS ON CLIENT\nRepeated IDs $UNIQUE_IDS_CLIENT"; else echo "ALL OK (CLIENT-IDS)"; fi
   UNIQUE_RES_CLIENT=$(echo "$RES_CLIENT" | uniq -d)
   if [ ! -z "$UNIQUE_RES_CLIENT" ]; then echo "ERROR: REPEATED RESULTS ON CLIENT"; else echo "ALL OK (CLIENT-RES)"; fi
-
-  echo UNIQUE_IDS_CLIENT;
 
   UNIQUE_IDS_SERVER=$(echo "$ID_SERVER" | uniq -d)
   if [ ! -z "$UNIQUE_IDS_SERVER" ]; then echo "ERROR: REPEATED IDS ON SERVER"; else echo "ALL OK (SERVER-IDS)"; fi

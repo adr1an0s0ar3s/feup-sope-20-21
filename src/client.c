@@ -20,8 +20,6 @@
 
 pthread_t daddy_thread;
 int publicFifoFD;
-char* publicFifo;
-int sizeOfThreads = 0;
 int isClientClosed = false, isServerClosed = false;
 unsigned int seed;
 
@@ -60,10 +58,8 @@ int main(int argc, char* argv[]) {
     // Changing the alarm handler
     signal(SIGALRM, signalAlarmHandler);
 
-    publicFifo = argv[3];
-
     // Opening the public FIFO
-    if (mkfifo(publicFifo, FIFO_MODE) < 0) {
+    if (mkfifo(argv[3], FIFO_MODE) < 0) {
         if (errno == EEXIST) {
             fprintf(stderr, "FIFO '%s' already exists\n", argv[3]);
         } else {
@@ -82,7 +78,6 @@ int main(int argc, char* argv[]) {
     while (!isClientClosed && !isServerClosed) {
         
         // Creation of the thread
-        sizeOfThreads++;
         pthread_create(&thread, NULL, threadFunction, NULL);
 
         usleep(rand_r(&seed) % 501 + 500); // Pseudo random pause

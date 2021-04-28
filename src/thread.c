@@ -17,12 +17,14 @@
 extern int n_IWANT, n_CLOSD, n_GOTRS, n_GAVUP;
 
 void * threadFunction(void * arg) {
+
+    static int threadCount = 0;
     
     int fdFifo;
 
     // Create message
     Message msg;
-    msg.rid = sizeOfThreads;
+    msg.rid = ++threadCount;
     msg.pid = getpid();
     msg.tid = pthread_self();
     msg.tskload = rand_r(&seed) % 9 + 1;
