@@ -91,7 +91,11 @@ int main(int argc, char* argv[]) {
     // Waiting for threads to finish
     sleep(1);
 
+    /*
+    // FOR TESTING PURPOSES
     printf("Cliente finalizado com %d threads\n", sizeOfThreads);
-    printf("IWANT: %d; GOTRS: %d; GAVEUP: %d; CLOSD: %d\n", n_IWANT, n_GOTRS, n_GAVUP, n_CLOSD);
+    printf("IWANT: %d; GOTRS: %d; GAVUP: %d; CLOSD: %d\n", n_IWANT, n_GOTRS, n_GAVUP, n_CLOSD);
+    */
+   
     exit(EXIT_SUCCESS);
 }
