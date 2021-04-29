@@ -2,7 +2,7 @@
 
 Sistemas Operativos 2020/2021, T7G1:
 
-- Adriano Soares (up201904873@edu.fe.up.pt)
+1. Adriano Soares (up201904873@edu.fe.up.pt)
 2. Diogo Maia (up201904974@edu.fe.up.pt)
 3. Francisco Cerqueira (up201905337@edu.fe.up.pt)
 4. Pedro Pereira (up201905508@edu.fe.up.pt)
@@ -19,8 +19,8 @@ O formato requerido será então:
 | c \<-t NSECS> \<FIFONAME> |
 | :-----------------------: |
 
-1. <u>NSECS</u>: número de segundos que o programa deve ficar ativo;
-2. <u>FIFONAME</u>: caminho relativo ou absoluto do canal público de comunicação com nome (FIFO) por onde o Cliente envia pedidos ao Servidor.
+1. **NSECS**: número de segundos que o programa deve ficar ativo;
+2. **FIFONAME**: caminho relativo ou absoluto do canal público de comunicação com nome (FIFO) por onde o Cliente envia pedidos ao Servidor.
 
 # Estrutura Geral do Código
 
