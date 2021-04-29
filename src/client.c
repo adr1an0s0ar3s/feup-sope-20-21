@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     
     // Verifying inputs
     if (argc != 4) {
-        fprintf(stderr, "Invalid number of arguments : the command should be something like ./client <-t n_sec> <fifoname>\n");
+        fprintf(stderr, "Invalid number of arguments : the command should be something like %s <-t n_sec> <fifoname>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
