@@ -33,9 +33,10 @@ O código encarregue do cliente divide-se entre quatro módulos, dois destes rep
 Este módulo contém o método principal (*main*), que é responsável pela gestão da *thread* principal e que, por sua vez, é responsável pela realização das seguintes tarefas:
 
 1. Armazenar e inicializar variáveis globais que são fundamentais para o módulo *thread.h*, tais como o descritor da FIFO pública, o número de *threads* geradas, uma *seed* usada para gerar números aleatórios e dois booleanos que indicam se o cliente ou o servidor estão fechados;
-2. Verificação do *input* introduzido pelo utilizador;Abertura e possível criação da FIFO pública;
-3. Configuração de um *signal handler* para um alarme, de modo a indicar o término do tempo imposto pelo utilizador, que, quando ativado, atualizará o estado do cliente;
-4. Geração de *threads* de pedido com intervalos de tempo pseudo-aleatórios, tendo sempre em conta o estado atual do cliente e servidor.
+2. Verificação do *input* introduzido pelo utilizador;
+3. Abertura e possível criação da FIFO pública;
+4. Configuração de um *signal handler* para um alarme, de modo a indicar o término do tempo imposto pelo utilizador, que, quando ativado, atualizará o estado do cliente;
+5. Geração de *threads* de pedido com intervalos de tempo pseudo-aleatórios, tendo sempre em conta o estado atual do cliente e servidor.
 
 Finalmente, a *thread* principal termina quando o tempo de execução do cliente ultrapassar o limite imposto pelo utilizador ou quando o servidor encerrar.
 
