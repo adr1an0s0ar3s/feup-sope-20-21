@@ -2,15 +2,16 @@
 #define SERVER_QUEUE_H_
 
 // C program for array implementation of queue
-#include <limits.h>
+//#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "message.h"
  
 // A structure to represent a queue
 struct Queue {
     int front, rear, size;
     unsigned capacity;
-    int* array;
+    Message* array;
 };
  
 // function to create a queue
@@ -25,8 +26,8 @@ struct Queue* createQueue(unsigned capacity)
  
     // This is important, see the enqueue
     queue->rear = capacity - 1;
-    queue->array = (int*)malloc(
-        queue->capacity * sizeof(int));
+    queue->array = (Message*)malloc(
+        queue->capacity * sizeof(Message));
     return queue;
 }
  
@@ -45,7 +46,7 @@ int isEmpty(struct Queue* queue)
  
 // Function to add an item to the queue.
 // It changes rear and size
-void enqueue(struct Queue* queue, int item)
+void enqueue(struct Queue* queue, Message item)
 {
     if (isFull(queue))
         return;
@@ -58,11 +59,12 @@ void enqueue(struct Queue* queue, int item)
  
 // Function to remove an item from queue.
 // It changes front and size
-int dequeue(struct Queue* queue)
+Message dequeue(struct Queue* queue)
 {
-    if (isEmpty(queue))
-        return INT_MIN;
-    int item = queue->array[queue->front];
+    // TODO
+    //if (isEmpty(queue))
+    //    return INT_MIN;
+    Message item = queue->array[queue->front];
     queue->front = (queue->front + 1)
                    % queue->capacity;
     queue->size = queue->size - 1;
@@ -70,18 +72,20 @@ int dequeue(struct Queue* queue)
 }
  
 // Function to get front of queue
-int front(struct Queue* queue)
+Message front(struct Queue* queue)
 {
-    if (isEmpty(queue))
-        return INT_MIN;
+    // TODO
+    //if (isEmpty(queue))
+    //    return INT_MIN;
     return queue->array[queue->front];
 }
  
 // Function to get rear of queue
-int rear(struct Queue* queue)
+Message rear(struct Queue* queue)
 {
-    if (isEmpty(queue))
-        return INT_MIN;
+    // TODO
+    //if (isEmpty(queue))
+    //    return INT_MIN;
     return queue->array[queue->rear];
 }
 
