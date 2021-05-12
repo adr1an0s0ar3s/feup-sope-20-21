@@ -1,6 +1,7 @@
 #ifndef SRC_SERVERMAIN_H_
 #define SRC_SERVERMAIN_H_
 
+#include "queue.h"
 #include <sys/types.h>
 
 /**
@@ -17,6 +18,10 @@ pthread_t daddy_thread;
  * @brief Size of Array threads
  */
 int sizeOfThreads;
+
+Queue buffer;
+
+pthread_mutex_t mutex;
 
 /**
  * @brief Flag which tells the program if the client is still running.
@@ -35,6 +40,10 @@ int isServerClosed;
  * @brief Seed used to generate random numbers
  */
 unsigned int seed;
+
+int verifyInput(int argc, char* argv[]);
+
+int openPublicFIFO(char filename[]);
 
 /**
  * @brief Handler of SIGALRM: purpose of of activating the isClientClosed flag

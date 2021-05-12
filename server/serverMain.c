@@ -17,6 +17,8 @@
 #include <pthread.h>
 
 pthread_t daddy_thread;
+Queue buffer;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int publicFifoFD;
 int isClientClosed = 0, isServerClosed = 0;
 unsigned int seed;
@@ -25,12 +27,32 @@ int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
 
+    pthread_t thread;
     seed = time(NULL);
     daddy_thread = pthread_self();
 
-    pthread_t thread;
+    &buffer = createQueue(20);  // TODO: ler capacidade
+    
+    signal(SIGALRM, signalAlarmHandler);
+    alarm(atoi(argv[2]));
 
-    exit(0);
+    // Loop with the creation of pseudo random threads
+    while (!isClientClosed && !isServerClosed) {
+        
+        // Creation of the thread
+        //pthread_create(&thread, NULL, threadFunction, NULL);
+        break;  // Temporary
+    }
+
+    // Waiting for threads to finish
+    sleep(1);
+
+    // FOR TESTING PURPOSES
+    printf("Cliente finalizado com %d threads\n", sizeOfThreads);
+
+    // TODO: LIBERTAR BUFFER
+   
+    exit(EXIT_SUCCESS);
 }
 
 int verifyInput(int argc, char* argv[]) {
