@@ -1,4 +1,7 @@
 #include "serverMain.h"
+#include "serverConsumer.h"
+#include "log.h"
+#include "queue.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -17,48 +20,48 @@
 #include <pthread.h>
 
 pthread_t daddy_thread;
-Queue buffer;
+Queue *buffer;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int publicFifoFD;
-int isClientClosed = 0, isServerClosed = 0;
-unsigned int seed;
+int isServerClosed = 0;
 
 int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
 
-    pthread_t thread;
-    seed = time(NULL);
     daddy_thread = pthread_self();
+    buffer = createQueue(20);  // TODO: ler capacidade
+    openPublicFIFO(argv[3]);
 
-    &buffer = createQueue(20);  // TODO: ler capacidade
+    // Create consumer thread
+    pthread_t thread;
+    pthread_create(&thread, NULL, thread_consumer, NULL);
     
     signal(SIGALRM, signalAlarmHandler);
     alarm(atoi(argv[2]));
 
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
+    Message message;
 
     // Loop with ...
-    while (!isClientClosed && !isServerClosed) {
-        if ((read = getline(&line, &len, publicFifoFD)) != -1) < 0) {
-            printf("Nothing\n");
-    }
-        // Creation of the thread
+    while (!isServerClosed) {
+        if (read(publicFifoFD, &message, sizeof(Message)) < 0) {
+            fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
+            exit(EXIT_FAILURE);
+        }
+        
+
+        //write_operation(message, )
+        // Creation of the producer thread
         //pthread_create(&thread, NULL, threadFunction, NULL);
         break;  // Temporary
     }
-
+ 
     // Waiting for threads to finish
     sleep(1);
 
-    // FOR TESTING PURPOSES
-    printf("Cliente finalizado com %d threads\n", sizeOfThreads);
-
-    // TODO: LIBERTAR BUFFER
+    freeQueue(buffer);
     close(publicFifoFD);
-    if (line) free(line);
+    unlink(argv[3]);
    
     exit(EXIT_SUCCESS);
 }
@@ -84,17 +87,14 @@ int verifyInput(int argc, char* argv[]) {
 }
 
 int openPublicFIFO(char filename[]) {
-    if (makefifo(filename, FIFO_MODE) < 0) {
-        if (errno == EEXIST) {
-            fprintf(stderr, "FIFO '%s' already exists\n", filename);
-        } else {
-            fprintf(stderr, "Can't create server FIFO!\n");
-        }
+    if (mkfifo(filename, 0777) < 0) {
+        if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
+        else fprintf(stderr, "Can't create server FIFO!\n");
         return 1;
     }
 
     if ((publicFifoFD = open(filename, O_WRONLY)) < 0) {
-        fprintf(stderr,"Error in opening public FIFO\n");
+        fprintf(stderr, "Error in opening public FIFO\n");
         return 1;
     }
 

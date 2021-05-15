@@ -15,20 +15,14 @@ int publicFifoFD;
 pthread_t daddy_thread;
 
 /**
- * @brief Size of Array threads
- */
-int sizeOfThreads;
-
-Queue buffer;
-
-pthread_mutex_t mutex;
+* @brief Buffer that contains the messages
+*/
+Queue *buffer;
 
 /**
- * @brief Flag which tells the program if the client is still running.
- * If is it equal to 1, the client has ended and vice-versa
- * 
- */
-int isClientClosed;
+* @brief Mutex used to manage the access to the buffer.
+*/
+pthread_mutex_t mutex;
 
 /**
  * @brief Flag which tells the program if the server is still running.
@@ -37,12 +31,20 @@ int isClientClosed;
 int isServerClosed;
 
 /**
- * @brief Seed used to generate random numbers
+ * @brief 
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
  */
-unsigned int seed;
-
 int verifyInput(int argc, char* argv[]);
 
+/**
+ * @brief Opens the public server FIFO
+ * 
+ * @param filename Public FIFO
+ * @return int Checks if the functione went well
+ */
 int openPublicFIFO(char filename[]);
 
 /**
