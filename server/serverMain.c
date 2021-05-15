@@ -36,9 +36,15 @@ int main(int argc, char* argv[]) {
     signal(SIGALRM, signalAlarmHandler);
     alarm(atoi(argv[2]));
 
-    // Loop with the creation of pseudo random threads
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    // Loop with ...
     while (!isClientClosed && !isServerClosed) {
-        
+        if ((read = getline(&line, &len, publicFifoFD)) != -1) < 0) {
+            printf("Nothing\n");
+    }
         // Creation of the thread
         //pthread_create(&thread, NULL, threadFunction, NULL);
         break;  // Temporary
@@ -51,6 +57,8 @@ int main(int argc, char* argv[]) {
     printf("Cliente finalizado com %d threads\n", sizeOfThreads);
 
     // TODO: LIBERTAR BUFFER
+    close(publicFifoFD);
+    if (line) free(line);
    
     exit(EXIT_SUCCESS);
 }
@@ -91,4 +99,8 @@ int openPublicFIFO(char filename[]) {
     }
 
     return 0;
+}
+
+void signalAlarmHandler(int signo) {
+    if (pthread_self() == daddy_thread) isServerClosed = true;
 }
