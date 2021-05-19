@@ -1,5 +1,6 @@
 #include "serverMain.h"
 #include "serverConsumer.h"
+#include "serverProducer.h"
 #include "log.h"
 #include "queue.h"
 
@@ -23,37 +24,48 @@ pthread_t daddy_thread;
 Queue *buffer;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int publicFifoFD;
-int isServerClosed = 0;
+int isServerClosed = false;
+int nsecs;
+int bufsize = 20;
 
 int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
 
     daddy_thread = pthread_self();
-    buffer = createQueue(20);  // TODO: ler capacidade
-    openPublicFIFO(argv[3]);
+    buffer = createQueue(bufsize);
+
+    if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
 
     // Create consumer thread
     pthread_t thread;
     pthread_create(&thread, NULL, thread_consumer, NULL);
     
     signal(SIGALRM, signalAlarmHandler);
-    alarm(atoi(argv[2]));
+    alarm(nsecs);
 
     Message message;
 
     // Loop with ...
+    int readStatus;
+    printf("Quase loop\n");
     while (!isServerClosed) {
-        if (read(publicFifoFD, &message, sizeof(Message)) < 0) {
+
+        // Read Message from publicFifo
+        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == 0) continue;    // No message to be read
+        else if (readStatus < 0) {
+            printf("%d\n", readStatus);                                                          // Error when reading message
             fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
             exit(EXIT_FAILURE);
         }
-        
 
-        //write_operation(message, )
+        // Logging the reception of the message
+        write_operation(message, RECVD);
+
         // Creation of the producer thread
-        //pthread_create(&thread, NULL, threadFunction, NULL);
-        break;  // Temporary
+        Message * messageCopy = (Message *) malloc(sizeof(Message));
+        memcpy(messageCopy, &message, sizeof(Message));
+        pthread_create(&thread, NULL, thread_producer, (void *) messageCopy);
     }
  
     // Waiting for threads to finish
@@ -62,38 +74,54 @@ int main(int argc, char* argv[]) {
     freeQueue(buffer);
     close(publicFifoFD);
     unlink(argv[3]);
+    pthread_mutex_destroy(&mutex);
    
     exit(EXIT_SUCCESS);
 }
 
 int verifyInput(int argc, char* argv[]) {
+
     if (argc < 4 || argc > 6) {
         fprintf(stderr, "Invalid number of arguments : the command should be something like %s <-t n_sec> [-l bufsz] <fifoname>\n", argv[0]);
         return 1;
     }
 
-    if (strcmp(argv[1], "-t")) {
+    bool validFormat = false;
+
+    for (int i = 1; i < argc - 1; i += 2) {
+        if (strcmp(argv[i], "-t") == 0) {
+            nsecs = atoi(argv[i + 1]);
+            if (nsecs <= 0) {
+                fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
+                return 1;
+            }
+            validFormat = true;
+        } else if (strcmp(argv[i], "-l") == 0) {
+            bufsize = atoi(argv[i + 1]);
+            if (bufsize <= 0) {
+                fprintf(stderr, "The bufsize should be a valid number greater than 0\n");
+                return 1;
+            }
+        }
+    }
+
+    if (!validFormat) {
         fprintf(stderr, "The flag -t is required\n");
-        return 1;
+        exit(EXIT_FAILURE);
     }
-
-    if (atoi(argv[2]) <= 0) {
-        fprintf(stderr, "The n_secs should be a valid number greater than 0\n");
-        return 1;
-    }
-
-    // TODO: A ordem das flags n devia importar
+    
     return 0;
 }
 
 int openPublicFIFO(char filename[]) {
+
     if (mkfifo(filename, 0777) < 0) {
         if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
         else fprintf(stderr, "Can't create server FIFO!\n");
         return 1;
     }
 
-    if ((publicFifoFD = open(filename, O_WRONLY)) < 0) {
+    if ((publicFifoFD = open(filename, O_RDONLY | O_NONBLOCK)) == -1) {
         fprintf(stderr, "Error in opening public FIFO\n");
         return 1;
     }

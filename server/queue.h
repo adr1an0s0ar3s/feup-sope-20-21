@@ -17,59 +17,29 @@ typedef struct {
 // function to create a queue
 // of given capacity.
 // It initializes size of queue as 0
-Queue* createQueue(unsigned capacity) {
-    Queue* queue = (Queue*)malloc(sizeof(Queue));
-    queue->capacity = capacity;
-    queue->front = queue->size = 0;
- 
-    // This is important, see the enqueue
-    queue->rear = capacity - 1;
-    queue->array = (Message*)malloc(queue->capacity * sizeof(Message));
-    return queue;
-}
+Queue* createQueue(unsigned capacity);
 
-void freeQueue(Queue* queue) {
-    if (queue->array) free(queue->array);
-    if (queue) free(queue);
-}
+void freeQueue(Queue* queue);
  
 // Queue is full when size becomes
 // equal to the capacity
-int isFull(Queue* queue) {
-    return (queue->size == queue->capacity);
-}
+int isFull(Queue* queue);
  
 // Queue is empty when size is 0
-int isEmpty(Queue* queue) {
-    return (queue->size == 0);
-}
+int isEmpty(Queue* queue);
  
 // Function to add an item to the queue.
 // It changes rear and size
-void enqueue(Queue* queue, Message item) {
-    if (isFull(queue)) return;
-    queue->rear = (queue->rear + 1) % queue->capacity;
-    queue->array[queue->rear] = item;
-    queue->size = queue->size + 1;
-}
+void enqueue(Queue* queue, Message item);
  
 // Function to remove an item from queue.
 // It changes front and size
-Message dequeue(Queue* queue) {
-    Message item = queue->array[queue->front];
-    queue->front = (queue->front + 1) % queue->capacity;
-    queue->size = queue->size - 1;
-    return item;
-}
+Message dequeue(Queue* queue);
  
 // Function to get front of queue
-Message front(Queue* queue) {
-    return queue->array[queue->front];
-}
+Message front(Queue* queue);
  
 // Function to get rear of queue
-Message rear(Queue* queue) {
-    return queue->array[queue->rear];
-}
+Message rear(Queue* queue);
 
 #endif  // SERVER_QUEUE_H_
