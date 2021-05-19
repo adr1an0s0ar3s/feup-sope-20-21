@@ -8,38 +8,32 @@
 #include <pthread.h>
 
 void* thread_consumer(void * arg) {
+    ClientInfo info;
     Message message;
-    int fifoDescriptor;
-    char path[200];
 
     while (!isServerClosed || !isEmpty(buffer)) {
         if (!isEmpty(buffer)) {
             //Buscar um valor do buffer
-            message = dequeue(buffer);
-            
-            snprintf(path, sizeof(path), "/tmp/%d.%ld",  message.pid, message.tid);
+            info = dequeue(buffer);
+            message = info.msg;
 
             //Modificar a mensagem
             message.pid = getpid();
             message.tid = pthread_self();
 
-            if ((fifoDescriptor = open(path, O_WRONLY)) < 0) {
-                write_operation(message, FAILD);
-                fprintf(stderr,"Client is closed, cannot open private FIFO\n");
-                continue;
-            }
-
             //Enviar mensagem para um FIFO privado
-            if (write(fifoDescriptor, &message, sizeof(message)) < 0) {
-                fprintf(stderr, "Can't send message!\n");
-                exit(EXIT_FAILURE);
+            if (write(info.fd, &message, sizeof(Message)) < 0) {
+                write_operation(message, FAILD);
+                //fprintf(stderr, "Can't send message!\n");
+                printf("Here: %d\n%d\n%ld\n", info.fd, message.pid, message.tid);
+                continue;
             }
             
             if (!isServerClosed) write_operation(message, TSKDN);
             else write_operation(message, TLATE);
 
             // Close private FIFO
-            if (close(fifoDescriptor) != 0) {
+            if (close(info.fd) != 0) {
                 fprintf(stderr, "Can't close private FIFO\n");
                 exit(EXIT_FAILURE);
             }

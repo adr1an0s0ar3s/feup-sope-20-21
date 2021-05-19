@@ -11,7 +11,7 @@ Queue* createQueue(unsigned capacity) {
  
     // This is important, see the enqueue
     queue->rear = capacity - 1;
-    queue->array = (Message*)malloc(queue->capacity * sizeof(Message));
+    queue->array = (ClientInfo*)malloc(queue->capacity * sizeof(ClientInfo));
     return queue;
 }
 
@@ -28,24 +28,24 @@ int isEmpty(Queue* queue) {
     return (queue->size == 0);
 }
 
-void enqueue(Queue* queue, Message item) {
+void enqueue(Queue* queue, ClientInfo item) {
     if (isFull(queue)) return;
     queue->rear = (queue->rear + 1) % queue->capacity;
     queue->array[queue->rear] = item;
     queue->size = queue->size + 1;
 }
 
-Message dequeue(Queue* queue) {
-    Message item = queue->array[queue->front];
+ClientInfo dequeue(Queue* queue) {
+    ClientInfo item = queue->array[queue->front];
     queue->front = (queue->front + 1) % queue->capacity;
     queue->size = queue->size - 1;
     return item;
 }
 
-Message front(Queue* queue) {
+ClientInfo front(Queue* queue) {
     return queue->array[queue->front];
 }
 
-Message rear(Queue* queue) {
+ClientInfo rear(Queue* queue) {
     return queue->array[queue->rear];
 }

@@ -11,7 +11,7 @@
 typedef struct {
     int front, rear, size;
     unsigned capacity;
-    Message* array;
+    ClientInfo* array;
 } Queue;
  
 // function to create a queue
@@ -30,16 +30,16 @@ int isEmpty(Queue* queue);
  
 // Function to add an item to the queue.
 // It changes rear and size
-void enqueue(Queue* queue, Message item);
+void enqueue(Queue* queue, ClientInfo item);
  
 // Function to remove an item from queue.
 // It changes front and size
-Message dequeue(Queue* queue);
+ClientInfo dequeue(Queue* queue);
  
 // Function to get front of queue
-Message front(Queue* queue);
+ClientInfo front(Queue* queue);
  
 // Function to get rear of queue
-Message rear(Queue* queue);
+ClientInfo rear(Queue* queue);
 
 #endif  // SERVER_QUEUE_H_

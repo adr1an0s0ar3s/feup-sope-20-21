@@ -11,4 +11,9 @@ typedef struct {
 	int tskres;  // task result
 } Message;
 
+typedef struct {
+	Message msg;
+	int fd;
+} ClientInfo;
+
 #endif // SRC_MESSAGE_H_

@@ -44,7 +44,8 @@ int main(int argc, char* argv[]) {
     signal(SIGALRM, signalAlarmHandler);
     alarm(nsecs);
 
-    Message message;
+    ClientInfo info;
+    char path[200];
 
     // Loop with ...
     int readStatus;
@@ -52,25 +53,27 @@ int main(int argc, char* argv[]) {
     while (!isServerClosed) {
 
         // Read Message from publicFifo
-        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == -1) {   // No message to be read
-            //unlink(argv[argc-1]);
-            //printf("%d", errno);
-            //printf("%ld\n", message);                                               // Error when reading message
-            //if (errno == EWOULDBLOCK) continue;
-            //else {
-                fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
-                exit(EXIT_FAILURE);
-            //}
+        if ((readStatus = read(publicFifoFD, &info.msg, sizeof(Message))) == -1) {
+            fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
+            exit(EXIT_FAILURE);
+        } else if (readStatus == 0) continue;
+
+        // Initiates the write descriptor of the private fifo
+        snprintf(path, sizeof(path), "/tmp/%d.%ld",  info.msg.pid, info.msg.tid);
+        if ((info.fd = open(path, O_WRONLY)) < 0) {
+            fprintf(stderr,"Client is closed, cannot open private FIFO\n");
+            continue;
         }
-        else if (readStatus == 0) continue;
 
         // Logging the reception of the message
-        write_operation(message, RECVD);
+        write_operation(info.msg, RECVD);
+
+        printf("%d\n", info.fd);
 
         // Creation of the producer thread
-        Message * messageCopy = (Message *) malloc(sizeof(Message));
-        memcpy(messageCopy, &message, sizeof(Message));
-        pthread_create(&thread, NULL, thread_producer, (void *) messageCopy);
+        ClientInfo *infoCopy = (ClientInfo *) malloc(sizeof(ClientInfo));
+        memcpy(infoCopy, &info, sizeof(ClientInfo));
+        pthread_create(&thread, NULL, thread_producer, (void *) infoCopy); 
     }
  
     // Waiting for threads to finish
@@ -123,7 +126,7 @@ int openPublicFIFO(char filename[]) {
     if (mkfifo(filename, 0777) < 0) {
         if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
         else fprintf(stderr, "Can't create server FIFO!\n");
-        
+        return 1;
     }
 
     if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
