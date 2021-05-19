@@ -30,7 +30,7 @@ int isEmpty(Queue* queue);
  
 // Function to add an item to the queue.
 // It changes rear and size
-void enqueue(Queue* queue, ClientInfo item);
+int enqueue(Queue* queue, ClientInfo item);
  
 // Function to remove an item from queue.
 // It changes front and size

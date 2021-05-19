@@ -28,11 +28,12 @@ int isEmpty(Queue* queue) {
     return (queue->size == 0);
 }
 
-void enqueue(Queue* queue, ClientInfo item) {
-    if (isFull(queue)) return;
+int enqueue(Queue* queue, ClientInfo item) {
+    if (isFull(queue)) return 1;
     queue->rear = (queue->rear + 1) % queue->capacity;
     queue->array[queue->rear] = item;
     queue->size = queue->size + 1;
+    return 0;
 }
 
 ClientInfo dequeue(Queue* queue) {

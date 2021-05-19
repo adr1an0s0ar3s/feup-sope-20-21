@@ -27,30 +27,44 @@ int publicFifoFD;
 int isServerClosed = false;
 int nsecs;
 int bufsize = 20;
+char* filename;
 
 int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
-
+    
     daddy_thread = pthread_self();
     buffer = createQueue(bufsize);
-
+    
+    fprintf(stderr, "[server]Starting Server\n");
     if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
+    fprintf(stderr, "[server]Created Server FIFO\n");
+    filename = argv[argc-1];
 
     // Create consumer thread
     pthread_t thread;
     pthread_create(&thread, NULL, thread_consumer, NULL);
+    fprintf(stderr, "[server]Server Consumer Thread Initiated\n");
     
     signal(SIGALRM, signalAlarmHandler);
     alarm(nsecs);
 
+    
+    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
+        fprintf(stderr, "Error in opening public FIFO\n");
+        return 1;
+    }
+
+    fprintf(stderr, "[server]A client has entered\n");
+    
     ClientInfo info;
     char path[200];
 
     // Loop with ...
     int readStatus;
-    printf("Quase loop\n");
+    fprintf(stderr, "[server]Processing...\n");
     while (!isServerClosed) {
+        
 
         // Read Message from publicFifo
         if ((readStatus = read(publicFifoFD, &info.msg, sizeof(Message))) == -1) {
@@ -61,30 +75,23 @@ int main(int argc, char* argv[]) {
         // Initiates the write descriptor of the private fifo
         snprintf(path, sizeof(path), "/tmp/%d.%ld",  info.msg.pid, info.msg.tid);
         if ((info.fd = open(path, O_WRONLY)) < 0) {
-            fprintf(stderr,"Client is closed, cannot open private FIFO\n");
-            continue;
+            //fprintf(stderr,"Client is closed, cannot open private FIFO\n");
         }
 
         // Logging the reception of the message
         write_operation(info.msg, RECVD);
 
-        printf("%d\n", info.fd);
+  
 
         // Creation of the producer thread
         ClientInfo *infoCopy = (ClientInfo *) malloc(sizeof(ClientInfo));
         memcpy(infoCopy, &info, sizeof(ClientInfo));
+        fprintf(stderr, "[server]New Producer Thread\n");
         pthread_create(&thread, NULL, thread_producer, (void *) infoCopy); 
     }
  
     // Waiting for threads to finish
-    sleep(1);
-
-    freeQueue(buffer);
-    close(publicFifoFD);
-    unlink(argv[argc-1]);
-    pthread_mutex_destroy(&mutex);
-   
-    exit(EXIT_SUCCESS);
+    
 }
 
 int verifyInput(int argc, char* argv[]) {
@@ -129,14 +136,18 @@ int openPublicFIFO(char filename[]) {
         return 1;
     }
 
-    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
-        fprintf(stderr, "Error in opening public FIFO\n");
-        return 1;
-    }
-
-    return 0;
 }
 
 void signalAlarmHandler(int signo) {
+    fprintf(stderr, "[server]Server Services are over\n");
     if (pthread_self() == daddy_thread) isServerClosed = true;
+
+    sleep(2);
+    fprintf(stderr, "[server]Freeing queue, descriptors and FIFO\n");
+    freeQueue(buffer);
+    close(publicFifoFD);
+    unlink(filename);
+    pthread_mutex_destroy(&mutex);
+   
+    exit(EXIT_SUCCESS);
 }
