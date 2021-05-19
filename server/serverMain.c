@@ -52,12 +52,17 @@ int main(int argc, char* argv[]) {
     while (!isServerClosed) {
 
         // Read Message from publicFifo
-        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == 0) continue;    // No message to be read
-        else if (readStatus < 0) {
-            printf("%d\n", readStatus);                                                          // Error when reading message
-            fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
-            exit(EXIT_FAILURE);
+        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == -1) {   // No message to be read
+            //unlink(argv[argc-1]);
+            //printf("%d", errno);
+            //printf("%ld\n", message);                                               // Error when reading message
+            //if (errno == EWOULDBLOCK) continue;
+            //else {
+                fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
+                exit(EXIT_FAILURE);
+            //}
         }
+        else if (readStatus == 0) continue;
 
         // Logging the reception of the message
         write_operation(message, RECVD);
@@ -73,7 +78,7 @@ int main(int argc, char* argv[]) {
 
     freeQueue(buffer);
     close(publicFifoFD);
-    unlink(argv[3]);
+    unlink(argv[argc-1]);
     pthread_mutex_destroy(&mutex);
    
     exit(EXIT_SUCCESS);
@@ -118,10 +123,10 @@ int openPublicFIFO(char filename[]) {
     if (mkfifo(filename, 0777) < 0) {
         if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
         else fprintf(stderr, "Can't create server FIFO!\n");
-        return 1;
+        
     }
 
-    if ((publicFifoFD = open(filename, O_RDONLY | O_NONBLOCK)) == -1) {
+    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
         fprintf(stderr, "Error in opening public FIFO\n");
         return 1;
     }

@@ -10,12 +10,12 @@ void * thread_producer(void * message) {
 
     while (!isServerClosed || !isFull(buffer)) {
         if (!isFull(buffer)) {
-            // Get result from lib.h
-            msg->tskres = task(msg->tskload);
 
-            // Change result to -1 if serverIsClosed
-            if (isServerClosed) msg->tskres = -1;
-            else write_operation(*msg, TSKEX);
+            if (!isServerClosed) {
+                // Get result from lib.h
+                msg->tskres = task(msg->tskload);
+                write_operation(*msg, TSKEX);
+            } else msg->tskres = -1;    // Change result to -1 if serverIsClosed
 
             // Send message to buffer
             pthread_mutex_lock(&mutex);
