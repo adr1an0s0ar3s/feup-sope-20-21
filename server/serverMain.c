@@ -129,12 +129,13 @@ int openPublicFIFO(char filename[]) {
 
 void signalAlarmHandler(int signo) {
     if (pthread_self() == daddy_thread) isServerClosed = true;
-    sleep(1);
 
-    freeQueue(buffer);
     close(publicFifoFD);
     unlink(filename);
+
+    sleep(1);
     pthread_mutex_destroy(&mutex);
+    freeQueue(buffer);
    
     exit(EXIT_SUCCESS);
 }
