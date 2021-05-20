@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     buffer = createQueue(bufsize);
     filename = argv[argc-1];
 
-    if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
+    
     printf("!\n");
     // Create consumer thread
     pthread_t thread;
@@ -45,11 +45,8 @@ int main(int argc, char* argv[]) {
     
     signal(SIGALRM, signalAlarmHandler);
     alarm(nsecs);
-    printf("!\n");
-    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
-        fprintf(stderr, "Error in opening public FIFO\n");
-        exit(EXIT_FAILURE);
-    }
+    
+    if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
 
     Message message;
 
@@ -76,6 +73,7 @@ int main(int argc, char* argv[]) {
     }
  
     // Waiting for threads to finish
+    
     
 }
 
@@ -118,11 +116,13 @@ int openPublicFIFO(char filename[]) {
     if (mkfifo(filename, 0777) < 0) {
         if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
         else fprintf(stderr, "Can't create server FIFO!\n");
-        
+    }
+
+    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
+        fprintf(stderr, "Error in opening public FIFO\n");
+        exit(EXIT_FAILURE);
     }
     
-
-
     return 0;
 
 }
@@ -132,10 +132,11 @@ void signalAlarmHandler(int signo) {
 
     close(publicFifoFD);
     unlink(filename);
-
-    sleep(1);
+    
+    sleep(3);
     pthread_mutex_destroy(&mutex);
-    freeQueue(buffer);
-   
-    exit(EXIT_SUCCESS);
+    printf("Size of buffer final: %d\n", buffer->size);
+    freeQueue(buffer); 
+
+    exit(EXIT_SUCCESS);   
 }
