@@ -1,8 +1,4 @@
 #include "queue.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "message.h"
  
 Queue* createQueue(unsigned capacity) {
     Queue* queue = (Queue*)malloc(sizeof(Queue));

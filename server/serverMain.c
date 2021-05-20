@@ -20,28 +20,30 @@
 #include <signal.h>
 #include <pthread.h>
 
-pthread_t daddy_thread;
-Queue *buffer;
+#include <poll.h>
+
+// Mutex
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-int publicFifoFD;
+
+Queue *buffer;
 int isServerClosed = false;
+int publicFifoFD;
+int n_threads = 0;
+
+// Inputs
 int nsecs;
 int bufsize = 20;
-char* filename;
+char *filename;
 
 int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
-    printf("!\n");
-    daddy_thread = pthread_self();
-    buffer = createQueue(bufsize);
-    filename = argv[argc-1];
 
-    
-    printf("!\n");
+    buffer = createQueue(bufsize);
+
     // Create consumer thread
-    pthread_t thread;
-    pthread_create(&thread, NULL, thread_consumer, NULL);
+    pthread_t threads[2000];
+    pthread_create(&threads[n_threads++], NULL, thread_consumer, NULL);
     
     signal(SIGALRM, signalAlarmHandler);
     alarm(nsecs);
@@ -49,19 +51,16 @@ int main(int argc, char* argv[]) {
     if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
 
     Message message;
-
-    // Loop with ...
     int readStatus;
-    printf("Quase loop\n");
-    while (!isServerClosed) {
 
+    while (!isServerClosed) {
         // Read Message from publicFifo
-        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == -1) {   // No message to be read
-                fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
-                exit(EXIT_FAILURE);
-            //}
+        if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == -1) {
+            if (errno == EWOULDBLOCK) continue;
+            fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
+            exit(EXIT_FAILURE);
         }
-        else if (readStatus == 0) continue;
+        else if (readStatus == 0) break;
 
         // Logging the reception of the message
         write_operation(message, RECVD);
@@ -69,12 +68,24 @@ int main(int argc, char* argv[]) {
         // Creation of the producer thread
         Message * messageCopy = (Message *) malloc(sizeof(Message));
         memcpy(messageCopy, &message, sizeof(Message));
-        pthread_create(&thread, NULL, thread_producer, (void *) messageCopy);
+        pthread_create(&threads[n_threads++], NULL, thread_producer, (void *) messageCopy);
     }
- 
-    // Waiting for threads to finish
-    
-    
+
+    unlink(filename);
+
+    // Terminate serverProducer threads
+    for (int i = n_threads - 1; i > 1; --i) {
+        pthread_join(threads[i], NULL);
+        n_threads--;
+    }
+
+    // Destroy mutex
+    pthread_mutex_destroy(&mutex);
+
+    // Terminate consumerThread
+    pthread_join(threads[n_threads--], NULL);
+
+    exit(EXIT_SUCCESS);
 }
 
 int verifyInput(int argc, char* argv[]) {
@@ -105,8 +116,10 @@ int verifyInput(int argc, char* argv[]) {
 
     if (!validFormat) {
         fprintf(stderr, "The flag -t is required\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
+
+    filename = argv[argc-1];
     
     return 0;
 }
@@ -115,28 +128,26 @@ int openPublicFIFO(char filename[]) {
 
     if (mkfifo(filename, 0777) < 0) {
         if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
-        else fprintf(stderr, "Can't create server FIFO!\n");
+        else {
+            fprintf(stderr, "Can't create server FIFO!\n");
+            return 1;
+        }
     }
 
-    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
+    if ((publicFifoFD = open(filename, O_RDONLY | O_NONBLOCK)) == -1) {
         fprintf(stderr, "Error in opening public FIFO\n");
-        exit(EXIT_FAILURE);
+        return 1;
     }
+
+    struct pollfd fds;
+    fds.fd = publicFifoFD;
+    fds.events = POLLIN;
+    while (!isServerClosed && (poll(&fds, 1, 0) != -1) && !(fds.revents & POLLIN)) {}   // TODO: poll error -> exit(EXIT_FAILURE)
     
     return 0;
-
 }
 
 void signalAlarmHandler(int signo) {
-    if (pthread_self() == daddy_thread) isServerClosed = true;
-
-    close(publicFifoFD);
-    unlink(filename);
-    
-    sleep(3);
-    pthread_mutex_destroy(&mutex);
-    printf("Size of buffer final: %d\n", buffer->size);
-    freeQueue(buffer); 
-
-    exit(EXIT_SUCCESS);   
+    isServerClosed = true;
+    close(publicFifoFD);  
 }

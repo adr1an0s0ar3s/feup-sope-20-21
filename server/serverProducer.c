@@ -6,11 +6,14 @@
 #include <pthread.h>
 
 void * thread_producer(void * message) {
+
     Message *msg = (Message *) message;
     
     if (!isServerClosed) {
         // Get result from lib.h
         msg->tskres = task(msg->tskload);
+
+        // Log action
         write_operation(*msg, TSKEX);
     }
 
@@ -19,7 +22,8 @@ void * thread_producer(void * message) {
     while (!enqueue(buffer, *msg)) {}
     pthread_mutex_unlock(&mutex);
 
-
+    // Free dynamically allocated space for Message
     free(msg);
+
     pthread_exit(NULL);
 }

@@ -7,67 +7,44 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void* thread_consumer(void * arg) {
+void * thread_consumer(void *arg) {
+
     Message message;
     int fifoDescriptor;
     char path[200];
 
-    while (1) {
+    while (!isServerClosed || n_threads != 1 || !isEmpty(buffer)) {
         if (!isEmpty(buffer)) {
-            //Buscar um valor do buffer
+
+            // Gets a Message from buffer
             message = dequeue(buffer);
-        
             
             snprintf(path, sizeof(path), "/tmp/%d.%ld",  message.pid, message.tid);
 
-            //Modificar a mensagem
+            // Modifying message
             message.pid = getpid();
             message.tid = pthread_self();
 
-            if (isServerClosed && message.tskres != -1){
-                write_operation(message,FAILD);
-                continue;
-            }
-
-            fprintf(stderr, "1\n");
-
-            if ((fifoDescriptor = open(path, O_WRONLY|O_NONBLOCK)) < 0) {
+            if ((fifoDescriptor = open(path, O_WRONLY | O_NONBLOCK)) == -1) {   // Check if errno == ENXIO?
                 write_operation(message, FAILD);
-                fprintf(stderr,"Client is closed, cannot open private FIFO\n");
-                continue;
-            }
+                fprintf(stderr, "Client is closed, cannot open private FIFO\n");
+            } else {
 
-            fprintf(stderr,"2\n");
+                // Sending Message to private FIFO
+                if (write(fifoDescriptor, &message, sizeof(message)) == -1) {
+                    write_operation(message, FAILD);
+                    fprintf(stderr, "Client is closed, cannot write on private FIFO\n");
+                } else if (message.tskres == -1) write_operation(message, TLATE);
+                else write_operation(message, TSKDN);
 
-            //Enviar mensagem para um FIFO privado
-            if (write(fifoDescriptor, &message, sizeof(message)) < 0) {
-                fprintf(stderr, "Can't send message!\n");
-                write_operation(message,FAILD);
-
-            }
-            
-            if(message.tskres == -1) {
-                write_operation(message,TLATE);
+                // Close private FIFO
                 if (close(fifoDescriptor) != 0) {
                     fprintf(stderr, "Can't close private FIFO\n");
-                    exit(EXIT_FAILURE);
+                    exit(EXIT_FAILURE);     // Perhaps it could be better?
                 }
-                continue;
             }
-
-            if (!isServerClosed) write_operation(message, TSKDN);
-            else{write_operation(message,FAILD);}
-            
-
-            // Close private FIFO
-            if (close(fifoDescriptor) != 0) {
-                fprintf(stderr, "Can't close private FIFO\n");
-                exit(EXIT_FAILURE);
-            }
-
-            fprintf(stderr,"3\n");
         }
     }
 
-    
+    pthread_exit(NULL);
 }

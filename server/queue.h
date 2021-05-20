@@ -2,10 +2,10 @@
 #define SERVER_QUEUE_H_
 
 // C program for array implementation of queue
-//#include <limits.h>
+
+#include "message.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "message.h"
  
 // A structure to represent a queue
 typedef struct {

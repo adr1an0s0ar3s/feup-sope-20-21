@@ -2,6 +2,9 @@
 #define SRC_LOG_H_
 
 #include "message.h"
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 //Operations
 #define RECVD "RECVD"
