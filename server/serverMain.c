@@ -27,22 +27,29 @@ int publicFifoFD;
 int isServerClosed = false;
 int nsecs;
 int bufsize = 20;
+char* filename;
 
 int main(int argc, char* argv[]) {
 
     if (verifyInput(argc, argv) != 0) exit(EXIT_FAILURE);
-
+    printf("!\n");
     daddy_thread = pthread_self();
     buffer = createQueue(bufsize);
+    filename = argv[argc-1];
 
     if (openPublicFIFO(argv[argc-1]) != 0) exit(EXIT_FAILURE);
-
+    printf("!\n");
     // Create consumer thread
     pthread_t thread;
     pthread_create(&thread, NULL, thread_consumer, NULL);
     
     signal(SIGALRM, signalAlarmHandler);
     alarm(nsecs);
+    printf("!\n");
+    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
+        fprintf(stderr, "Error in opening public FIFO\n");
+        exit(EXIT_FAILURE);
+    }
 
     Message message;
 
@@ -53,11 +60,6 @@ int main(int argc, char* argv[]) {
 
         // Read Message from publicFifo
         if ((readStatus = read(publicFifoFD, &message, sizeof(Message))) == -1) {   // No message to be read
-            //unlink(argv[argc-1]);
-            //printf("%d", errno);
-            //printf("%ld\n", message);                                               // Error when reading message
-            //if (errno == EWOULDBLOCK) continue;
-            //else {
                 fprintf(stderr, "Error when trying to read a Message from public FIFO\n");
                 exit(EXIT_FAILURE);
             //}
@@ -74,14 +76,7 @@ int main(int argc, char* argv[]) {
     }
  
     // Waiting for threads to finish
-    sleep(1);
-
-    freeQueue(buffer);
-    close(publicFifoFD);
-    unlink(argv[argc-1]);
-    pthread_mutex_destroy(&mutex);
-   
-    exit(EXIT_SUCCESS);
+    
 }
 
 int verifyInput(int argc, char* argv[]) {
@@ -125,15 +120,21 @@ int openPublicFIFO(char filename[]) {
         else fprintf(stderr, "Can't create server FIFO!\n");
         
     }
+    
 
-    if ((publicFifoFD = open(filename, O_RDONLY)) == -1) {
-        fprintf(stderr, "Error in opening public FIFO\n");
-        return 1;
-    }
 
     return 0;
+
 }
 
 void signalAlarmHandler(int signo) {
     if (pthread_self() == daddy_thread) isServerClosed = true;
+    sleep(1);
+
+    freeQueue(buffer);
+    close(publicFifoFD);
+    unlink(filename);
+    pthread_mutex_destroy(&mutex);
+   
+    exit(EXIT_SUCCESS);
 }

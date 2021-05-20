@@ -32,7 +32,8 @@ void* thread_consumer(void * arg) {
             //Enviar mensagem para um FIFO privado
             if (write(fifoDescriptor, &message, sizeof(message)) < 0) {
                 fprintf(stderr, "Can't send message!\n");
-                exit(EXIT_FAILURE);
+                write_operation(message,FAILD);
+
             }
             
             if (!isServerClosed) write_operation(message, TSKDN);
