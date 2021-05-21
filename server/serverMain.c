@@ -127,8 +127,9 @@ int verifyInput(int argc, char* argv[]) {
 int openPublicFIFO(char filename[]) {
 
     if (mkfifo(filename, 0777) < 0) {
-        if (errno == EEXIST) fprintf(stderr, "FIFO '%s' already exists\n", filename);
-        else {
+        if (errno == EEXIST) {
+            fprintf(stderr, "FIFO '%s' already exists\n", filename);
+        } else {
             fprintf(stderr, "Can't create server FIFO!\n");
             return 1;
         }
@@ -142,7 +143,7 @@ int openPublicFIFO(char filename[]) {
     struct pollfd fds;
     fds.fd = publicFifoFD;
     fds.events = POLLIN;
-    while (!isServerClosed && (poll(&fds, 1, 0) != -1) && !(fds.revents & POLLIN)) {}   // TODO: poll error -> exit(EXIT_FAILURE)
+    while (!isServerClosed && (poll(&fds, 1, 0) != -1) && !(fds.revents & POLLIN)) {}
     
     return 0;
 }

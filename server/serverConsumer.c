@@ -34,8 +34,11 @@ void * thread_consumer(void *arg) {
                 if (write(fifoDescriptor, &message, sizeof(message)) == -1) {
                     write_operation(message, FAILD);
                     fprintf(stderr, "Client is closed, cannot write on private FIFO\n");
-                } else if (message.tskres == -1) write_operation(message, TLATE);
-                else write_operation(message, TSKDN);
+                } else if (message.tskres == -1) {
+                    write_operation(message, TLATE);
+                } else {
+                    write_operation(message, TSKDN);
+                }
 
                 // Close private FIFO
                 if (close(fifoDescriptor) != 0) {
