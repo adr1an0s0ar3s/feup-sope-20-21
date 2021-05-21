@@ -1,4 +1,4 @@
-.PHONY: server client-prof
+.PHONY: server client-prof client
 
 all: client-prof server
 
@@ -12,7 +12,7 @@ server: server/serverMain.c server/serverMain.h server/serverConsumer.c server/s
 	gcc server/serverMain.c server/serverConsumer.c server/serverProducer.c server/log.c server/delay.c server/lib.c server/queue.c -Wall -pthread -DDELAY=100 -o test/s
 
 cpplint:
-	cpplint --filter=-whitespace,-legal/copyright,-readability/check,-readability/casting,-build/header_guard,-build/include --recursive client
+	cpplint --filter=-whitespace,-legal/copyright,-readability/check,-readability/casting,-build/header_guard,-build/include --recursive server
 
 valgrind:
 	valgrind $(CMD)
