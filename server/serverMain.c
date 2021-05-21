@@ -76,14 +76,19 @@ int main(int argc, char* argv[]) {
     // Terminate serverProducer threads
     for (int i = n_threads - 1; i > 1; --i) {
         pthread_join(threads[i], NULL);
+        printf("Thread: %d\n", n_threads);
         n_threads--;
     }
 
     // Destroy mutex
     pthread_mutex_destroy(&mutex);
 
+    printf("Thread: %d\n", n_threads);
+
     // Terminate consumerThread
     pthread_join(threads[n_threads--], NULL);
+
+    printf("Thread: %d\n", n_threads);
 
     freeQueue(buffer);
 
