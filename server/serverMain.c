@@ -85,6 +85,8 @@ int main(int argc, char* argv[]) {
     // Terminate consumerThread
     pthread_join(threads[n_threads--], NULL);
 
+    freeQueue(buffer);
+
     exit(EXIT_SUCCESS);
 }
 
